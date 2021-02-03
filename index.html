@@ -1,0 +1,314 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <!-- meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      
+    <link rel="stylesheet" type="text/css" href="css/leaflet.css" />
+    <link rel="stylesheet" type="text/css" href="css/leaflet-openweathermap.css" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    
+    <link rel="stylesheet" type="text/css" href="css/styles.css" />
+
+    <title>WeatherApp!</title>
+  </head>
+  <body>
+    
+      <div class="container">
+          <div class="row">
+              <div class="main_container col-md-4">
+                  <h1>What's the weather</h1>
+
+                  <form>
+                      <div class="form-group">
+                        <label for="exampleInputEmail1">Enter the name of city</label>
+                        <input type="text" class="form-control" id="city" placeholder="">
+                      </div>   
+                      <button type="submit" class="btn btn-primary" id="submit">Submit</button>
+                  </form>
+
+                  
+                  
+              </div>
+              <div class="map_container col-md-8 disabled">
+                  <div class="box">
+                      <h3 class="name"></h3>
+                      <h5 class="time"></h5>
+                      <h5 class = "description"></h5>
+                      
+                        <div class="row">
+                            <div id="icon" class="col-5">
+                                <img id="wicon" src="">
+                                <p class="temp"> </p>
+                            </div>
+                            <div class="col-6">
+                               
+                                <h6 class="humidity">Humidity:</h6>
+                                <h6 class="wind">Wind:</h6>
+                            </div>
+                        </div>
+                            <div id="chart" class="row">
+                                <canvas id="myChart"></canvas>
+                                <p id="photos" class="d-none d-xl-block"></p>
+                            </div>
+                                
+                        <div id="map"></div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+    <!-- Optional JavaScript; choose one of the two! -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="js/chartjs-plugin-datalabels.js"></script>
+    <script type="text/javascript" src="js/leaflet.js"></script>
+    <script type="text/javascript" src="js/leaflet-openweathermap.js"></script>
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    
+    <script>
+        
+        
+        //City name
+        var name;
+        $('#submit').click(function(){
+       
+            name=$('#city').val();
+            
+        })
+        
+         
+        var jsonData;
+        var latitude=51.5;
+        var longitude=10;
+
+  
+        $.getJSON('http://api.openweathermap.org/data/2.5/weather?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
+            
+            jsonData = data;
+            
+            //Make Map visible
+            $('.map_container').removeClass('disabled');
+            
+            
+            //Fetching and appending Name and Country
+            var name_country = jsonData.name +', '+jsonData.sys.country;
+            $('.name').text(name_country);
+
+            
+            //Appending time and day
+            var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            var time = new Date(jsonData.dt*1000+jsonData.timezone*1000).toLocaleString("en-US",{timeZone:"UTC",hour: '2-digit', minute: '2-digit'})
+            var d = days[new Date(jsonData.dt * 1000).getDay()];
+            $('.time').text(d+', '+time);
+            
+            
+            //Description
+            $('.description').text(jsonData.weather[0].description);
+
+            
+            //Fetching and appending icon
+            var iconcode = jsonData.weather[0].icon;
+            var iconurl = "http://openweathermap.org/img/w/" + iconcode + ".png";
+            $('#wicon').attr('src', iconurl);
+
+            
+            //Temperature
+            $('.temp').text(jsonData.main.temp+"\u00B0"+"C");
+
+            //Humidity
+            $('.humidity').text("Humidity: "+jsonData.main.humidity+"%");
+
+
+            //Fetching and converting wind speed to km/h
+            var wind = meterToKiloMeter(jsonData.wind.speed).toPrecision(2);
+            var windDir=getCardinalDirection(jsonData.wind.deg);
+            $('.wind').text("Wind: "+wind+" km/h"+"  "+windDir);
+
+
+
+           //Updating latitude and longitude
+            if(parseFloat(jsonData.coord.lat)!='')
+                latitude = jsonData.coord.lat;
+
+
+            if(parseFloat(jsonData.coord.lon)!='')
+                longitude = jsonData.coord.lon;
+
+         
+
+
+
+
+            //Map display with Layers
+            var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18});
+
+            
+            //3 Selectable properties from top right icon of map
+            var clouds = L.OWM.cloudsClassic({showLegend: false, opacity: 0.5, appId: '37cb16f6f0304c5a3f960133f3cb7545'});
+            var temp = L.OWM.temperature({showLegend: false, opacity: 0.5, appId: '37cb16f6f0304c5a3f960133f3cb7545'});
+            var precipitation = L.OWM.precipitation({appId: '37cb16f6f0304c5a3f960133f3cb7545'});
+
+           
+            var map = L.map('map', { center: new L.LatLng(latitude, longitude), zoom: 12, layers: [osm] });
+            var baseMaps = { "OSM Standard": osm };
+            var overlayMaps = { "Clouds": clouds,"Temperature":temp,"Precipitation": precipitation};
+            var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+        });
+        
+        
+        
+        //For 5 Day weather forecast
+        var dataset = [];
+        var val=[]; 
+        var map = new Map();
+        $.getJSON('http://api.openweathermap.org/data/2.5/forecast?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
+            
+            jsonData = data;
+            
+            //Creating and updating forecast photos
+            var pictures = document.getElementById("photos");
+            var n = jsonData.cnt;
+            var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
+            
+            for (var i=0; i < n; i=i+8) {
+                 var contain = document.createElement('div');                            //Main Div N/8times
+                 var time = document.createElement('p');                                 //   |
+                                                                                         // Time
+                 time.innerHTML = days[new Date(jsonData.list[i].dt*1000).getDay()];     //   | 
+                 contain.append(time);                                                   // Picture
+                                                                                         //   |
+                                                                                         // Temperature
+                                                                                            
+                 var img = new Image();
+                 img.src = "http://openweathermap.org/img/w/" + jsonData.list[i].weather[0].icon + ".png";
+                 contain.appendChild(img)
+               
+
+                 var degree = document.createElement('p');
+                 degree.innerHTML = parseInt(jsonData.list[i].main.temp)+"\u00B0";
+                 contain.appendChild(degree);
+
+
+                 pictures.appendChild(contain);                                          // Main div append to pictures(container)
+
+            }
+
+
+            //Fetching data for the chart at interval of 3 hrs and storing it in a Map
+            for( var i = 0; i < 8; i++){
+                var sign = 1;
+                var item = Math.round(jsonData.list[i].main.temp);
+                if(item < 0){
+                    sign = -1;
+                }
+                dataset.push(Math.abs(item));
+                
+                //Data value with sign map
+                map.set(Math.abs(item),sign);
+                
+                item = new Date(jsonData.list[i].dt*1000).toLocaleString("en-US",{timeZone:"UTC",hour: '2-digit'});
+                val.push(item);
+            }
+          
+
+        //    console.log(dataset);
+        //    console.log(map);
+        });
+        
+       
+        
+        //Creating Weather Chart
+        var minimum = Math.min.apply(Math,dataset)-2;
+        var ctx = document.getElementById('myChart').getContext('2d');
+        
+        var chart = new Chart(ctx, {
+            type: 'line',             //Line type
+            data: {                    
+                labels: val,
+                datasets: [{
+                    label: '',
+                    backgroundColor: '#FFF5CC',
+                    borderColor: '#FFCC00',
+                    data: dataset
+                }]
+            },
+            options: {    
+                plugins: {              //Used Plugin to display datalabels
+                  datalabels: {
+                    color: '#ffffff',
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: function(value){
+                        return map.get(value)*value;
+                    },
+                    font: {
+                      size:15,
+                      weight: 'bold'
+                    }
+                  }
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    display: false
+                },  
+                scales:{
+                    yAxes: [{
+                        display:false,
+                        ticks: {
+                            suggestedMin: minimum,
+                            suggestedMax:43,
+                            
+                        }
+                    }],
+                    xAxes: [{
+                        gridLines : {
+                            drawBorder:false,
+                            drawOnChartArea: false
+                        },
+                        ticks: {
+                            suggestedMin: minimum,
+                            fontSize:12,
+                            fontColor:'#FFFFFF'
+                        }
+                    }]
+                },
+                
+                layout: {
+                padding: {
+                    left: 0,
+                    right: 0,
+                    top: 30,
+                    bottom: 0
+                }
+             }
+            }
+        });
+        
+        
+        function meterToKiloMeter(speed){
+            var kmh = (speed*60*60)/1000;
+            return kmh;
+        };
+        
+        
+        function getCardinalDirection(angle) {
+            const directions = ['↑N', '↗NE', '→E', '↘SE', '↓S', '↙SW', '←W', '↖NW'];
+            return directions[Math.round(angle / 45) % 8];
+        }
+        
+        
+        setTimeout(function() {
+            chart.update(); 
+        },1000);
+        
+        
+    </script>
+  </body>
+</html>

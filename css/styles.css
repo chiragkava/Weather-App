@@ -1,0 +1,94 @@
+ html {
+    background:url(../images/background.jpg)
+        no-repeat center center fixed;
+    background-size: cover;
+    height: 100%;
+
+
+}  
+
+body{
+    background: none;
+    color: white;
+}
+
+.main_container{
+    text-align: center;
+    margin-top: 150px;
+    width:450px;
+}
+
+input{
+    margin: 20px 0;
+}
+
+.weather{
+    margin-top: 15px;
+}
+
+.map_container{
+    margin-top: 10px;
+    width: 100%;
+}
+
+#map {
+    height:250px;
+    border:3px solid grey;
+}
+
+.box{
+    color:#CDCCCD;
+    border:1px solid white;
+    border-radius: 5px;
+    background: transparent;
+    padding: 10px;
+    width:100%;
+}
+
+#wicon{
+    float: left;
+}
+
+.temp{
+    float:left;
+    padding-left: 30px;
+    font-size: 37px;
+    font-weight:600;
+}
+@media only screen and (max-width: 600px) {
+  .temp {
+      font-size: 29px;
+      padding-left: 5px;
+  }
+}
+
+canvas{
+  width:100%!important;
+  height:130px !important;
+  display: block !important;
+}
+
+#photos div{
+    padding-left:20px;
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    width:70px;
+    padding-right: 125px;
+    float: left;
+}
+
+#photos p{
+    padding-left: 25px;
+}
+
+#photos img{
+    width:70px;
+    height: 70px;
+}
+
+.disabled{
+    display: none;
+}
+      
+        
