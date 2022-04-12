@@ -87,7 +87,7 @@
         var longitude=10;
 
 
-        $.getJSON('https://secret-ocean-49799.herokuapp.com/http://api.openweathermap.org/data/2.5/weather?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
+        $.getJSON('http://api.openweathermap.org/data/2.5/weather?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
             
             jsonData = data;
             
@@ -167,7 +167,7 @@
         var dataset = [];
         var val=[]; 
         var map = new Map();
-        $.getJSON('https://secret-ocean-49799.herokuapp.com/http://api.openweathermap.org/data/2.5/forecast?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
+        $.getJSON('http://api.openweathermap.org/data/2.5/forecast?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
             
             jsonData = data;
             
