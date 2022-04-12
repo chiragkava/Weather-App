@@ -167,7 +167,7 @@
         var dataset = [];
         var val=[]; 
         var map = new Map();
-        $.getJSON('http://api.openweathermap.org/data/2.5/forecast?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
+        $.getJSON('https://api.openweathermap.org/data/2.5/forecast?q='+name+'&units=metric&appid=37cb16f6f0304c5a3f960133f3cb7545', function(data) {
             
             jsonData = data;
             
@@ -186,7 +186,7 @@
                                                                                          // Temperature
                                                                                             
                  var img = new Image();
-                 img.src = "http://openweathermap.org/img/w/" + jsonData.list[i].weather[0].icon + ".png";
+                 img.src = "https://openweathermap.org/img/w/" + jsonData.list[i].weather[0].icon + ".png";
                  contain.appendChild(img)
                
 
